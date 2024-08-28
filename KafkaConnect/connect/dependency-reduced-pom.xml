@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>kafka-connect</artifactId>
+    <groupId>com.ericsson.component.aia.common.data.tools</groupId>
+    <version>1.0.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>connect</artifactId>
+  <name>Tool that performs export/import data to/from Kafka</name>
+  <version>1.0.1-SNAPSHOT</version>
+  <organization>
+    <name>LM Ericsson LTD</name>
+    <url>www.ericsson.com</url>
+  </organization>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.4.3</version>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <finalName>uber-${artifactId}-${version}</finalName>
+                <transformers>
+                  <transformer />
+                  <transformer>
+                    <manifestEntries>
+                      <Main-Class>${main_class}</Main-Class>
+                      <X-Compile-Source-JDK>${version.java}</X-Compile-Source-JDK>
+                      <X-Compile-Target-JDK>${version.java}</X-Compile-Target-JDK>
+                    </manifestEntries>
+                  </transformer>
+                </transformers>
+                <shadedArtifactAttached>true</shadedArtifactAttached>
+                <shadedClassifierName>${uber-shaded}</shadedClassifierName>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>1.1</version>
+          <executions>
+            <execution>
+              <phase>validate</phase>
+              <goals>
+                <goal>create</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <doCheck>false</doCheck>
+            <doUpdate>false</doUpdate>
+            <shortRevisionLength>8</shortRevisionLength>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.3</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  <properties>
+    <version.java>1.7</version.java>
+    <version.kafka.api>0.10.2.0</version.kafka.api>
+    <git.repository>AIA/tooling/data-tools</git.repository>
+    <version.confluent.kafka>3.2.0</version.confluent.kafka>
+    <uber-shaded>UBER</uber-shaded>
+    <main_class>org.apache.kafka.connect.cli.ConnectStandalone</main_class>
+  </properties>
+</project>
+

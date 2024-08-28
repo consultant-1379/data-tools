@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+                <groupId>com.ericsson.component.aia.common.data.tools</groupId>
+                <artifactId>kafka-connect</artifactId>
+                <version>1.0.13-SNAPSHOT</version>
+        </parent>
+
+  <artifactId>docker-image</artifactId>
+  <packaging>pom</packaging>
+  <name>Kafka Connect Docker Image</name>
+
+  <properties>
+    <checkstyle.skip>true</checkstyle.skip>
+    <cpd.skip>true</cpd.skip>
+    <pmd.skip>true</pmd.skip>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <profiles>
+    <profile>
+      <id>build_docker_image</id>
+
+      <activation>
+        <property>
+          <name>build-docker-image</name>
+        </property>
+      </activation>
+
+      <properties>
+        <docker.image.name>tooling/data-tools/kafka-connect</docker.image.name>
+
+        <!-- Required properties when using AIA integration
+             pom configuration for building docker images.
+             Their should not be any reason to change these. -->
+        <docker.resource.phase>generate-resources</docker.resource.phase>
+        <docker.create.phase>package</docker.create.phase>
+        <docker.push.phase>deploy</docker.push.phase>
+      </properties>
+
+     <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-archive</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.ericsson.component.aia.common.data.tools</groupId>
+                      <artifactId>connect</artifactId>
+                      <version>${project.version}</version>
+                      <type>tar.gz</type>
+                      <overWrite>false</overWrite>
+                      <outputDirectory>${docker.folder}</outputDirectory>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

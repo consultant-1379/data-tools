@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ericsson.component.aia.common.data.tools</groupId>
+        <artifactId>kafka-connect</artifactId>
+        <version>1.0.13-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>connect</artifactId>
+    <version>1.0.13-SNAPSHOT</version>
+    <name>Tool that performs export/import data to/from Kafka</name>
+
+    <properties>
+        <main_class>org.apache.kafka.connect.cli.ConnectStandalone</main_class>
+
+        <!-- confluent, kafka 3pp versions-->
+        <version.confluent>3.2.0</version.confluent>
+        <version.confluent.kafka>3.2.0</version.confluent.kafka>
+        <version.confluent.schema>3.2.0</version.confluent.schema>
+        <version.kafka.api>0.10.2.0</version.kafka.api>
+        <version.kafka.client>0.10.2.1</version.kafka.client>
+        <version.avro>1.8.2</version.avro>
+
+        <!-- jdbc driver version-->
+        <version.jdbc.postgresql>9.4.1208</version.jdbc.postgresql>
+
+        <version.java>1.7</version.java>
+        <uber-shaded>UBER</uber-shaded>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+            <version>${version.kafka.api}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${version.kafka.client}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-connect-jdbc</artifactId>
+            <version>${version.confluent.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-connect-avro-converter</artifactId>
+            <version>${version.confluent.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-connect-hdfs</artifactId>
+            <version>${version.confluent.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-schema-registry-client</artifactId>
+            <version>${version.confluent.schema}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <version>${version.confluent}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>common-config</artifactId>
+            <version>${version.confluent}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>common-utils</artifactId>
+            <version>${version.confluent}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${version.avro}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${version.jdbc.postgresql}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}-${project.version}</finalName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>${main_class}</Main-Class>
+                                        <X-Compile-Source-JDK>${version.java}</X-Compile-Source-JDK>
+                                        <X-Compile-Target-JDK>${version.java}</X-Compile-Target-JDK>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>${uber-shaded}</shadedClassifierName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <shortRevisionLength>8</shortRevisionLength>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>dist</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-distribution</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <finalName>${project.artifactId}-${project.version}</finalName>
+                                    <descriptors>
+                                        <descriptor>src/assembly/assembly.xml</descriptor>
+                                    </descriptors>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
